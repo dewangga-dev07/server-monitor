@@ -1,0 +1,27 @@
+name: CI/CD Server Monitor
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME  }}
+          password: ${{secrets.DOCKERHUB_PASSWORD }}
+
+
+      - name: Set short SHA
+        run: echo "SHORT_SHA=${GITHUB_SHA: :7}" >> $GITHUB_ENV
+
+      - name: Build and push
+        run: |
+             docker build -t dewadevops/server-monitor:latest -t  dewadevops/server-monitor:${{ env.SHORT_SHA }} .
+             docker push dewadevops/server-monitor:latest
+             docker push dewadevops/server-monitor:${{ env.SHORT_SHA }}
